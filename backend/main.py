@@ -49,44 +49,38 @@ class ChatMessage(BaseModel):
     history: List[str] = []
 
 # Auth Routes
+from datetime import datetime, timezone
+
 @app.post("/auth/signup")
 async def signup(user: UserSignup):
     try:
-        # Step 1: Try to sign in first to check if user exists
-        try:
-            existing_user = supabase.auth.sign_in_with_password({
-                "email": user.email,
-                "password": user.password
-            })
-            
-            # If sign in succeeds, user already exists and is confirmed
-            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
-            
-        except Exception as login_error:
-            # Sign in failed - this is expected for new users
-            # Check if it's because user doesn't exist vs wrong password
-            error_str = str(login_error).lower()
-            
-            if "invalid login credentials" in error_str or "email not confirmed" in error_str:
-                # User exists but wrong password or unconfirmed - proceed with signup
-                pass
-            elif "user not found" in error_str:
-                # User doesn't exist - good, we can create
-                pass
-        
-        # Step 2: Now create the new user
+        # Attempt signup
         response = supabase.auth.sign_up({
             "email": user.email,
             "password": user.password,
             "options": {"data": {"name": user.name}}
         })
         
+        if response.user:
+            # Check if this user was just created or already existed
+            # by comparing created_at timestamp
+            now = datetime.now(timezone.utc)
+            created_at = response.user.created_at
+            
+            # If user was created more than 5 seconds ago, they already existed
+            time_diff = (now - created_at).total_seconds()
+            if time_diff > 5:
+                raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
+        
         return {"user": response.user, "message": "Signup successful. Please check your email."}
         
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_str = str(e)
+        if "already registered" in error_str.lower() or "already been used" in error_str.lower():
+            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
+        raise HTTPException(status_code=400, detail=error_str)
 
 @app.post("/auth/login")
 async def login(user: UserLogin):
