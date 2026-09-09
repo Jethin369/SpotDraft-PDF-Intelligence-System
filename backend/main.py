@@ -52,19 +52,28 @@ class ChatMessage(BaseModel):
 @app.post("/auth/signup")
 async def signup(user: UserSignup):
     try:
+        # First, check if user already exists
+        existing_users = supabase_admin.table("auth.users").select("id", "email").eq("email", user.email).execute()
+        
+        if existing_users.data and len(existing_users.data) > 0:
+            # User already exists
+            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
+        
+        # User doesn't exist, create new account
         response = supabase.auth.sign_up({
             "email": user.email,
             "password": user.password,
             "options": {"data": {"name": user.name}}
         })
+        
         return {"user": response.user, "message": "Signup successful"}
+        
+    except HTTPException:
+        raise
     except Exception as e:
         error_msg = str(e).lower()
-        # Check if the error is because the user already exists
-        if "already registered" in error_msg or "user_already_exists" in error_msg or "email already" in error_msg:
+        if "already registered" in error_msg or "user_already_exists" in error_msg:
             raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
-        
-        # For other errors, show the original message
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/auth/login")
