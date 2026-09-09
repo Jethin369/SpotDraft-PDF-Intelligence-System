@@ -58,31 +58,32 @@ export default function Viewer() {
     }
   }, [currentId, docId, linkId, isShared]);
 
-  const handleComment = async () => {
+const handleComment = async () => {
     if (!newComment.trim()) return;
     
     try {
-      await fetch('https://spotdraft-pdf-v3.onrender.com/comments', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          document_id: currentId, 
-          user_name: userName, 
-          content: newComment, 
-          user_id: userId 
-        })
-      });
-      setNewComment('');
-      
-      // Refresh comments
-      const res = await fetch(`https://spotdraft-pdf-v3.onrender.com/comments/${currentId}`);
-      if (res.ok) {
-        setComments(await res.json());
-      }
+        await fetch('https://spotdraft-pdf-v3.onrender.com/comments', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                document_id: currentId, 
+                user_name: userName || "Anonymous User",  // Fallback name
+                content: newComment, 
+                user_id: userId || null  // Can be null for shared links
+            })
+        });
+        setNewComment('');
+        
+        // Refresh comments
+        const res = await fetch(`https://spotdraft-pdf-v3.onrender.com/comments/${currentId}`);
+        if (res.ok) {
+            setComments(await res.json());
+        }
     } catch (err) {
-      console.error('Comment error:', err);
+        console.error('Comment error:', err);
+        alert('Failed to add comment');
     }
-  };
+};
 
   const handleChat = async () => {
     if (!chatInput.trim()) return;

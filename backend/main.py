@@ -257,13 +257,13 @@ Your Answer:"""
             detail=str(e)
         )
 
-# Comments
+# Comments      
 @app.post("/comments")
 async def create_comment(comment: CommentCreate):
     try:
         data = {
             "document_id": comment.document_id,
-            "user_name": comment.user_name,
+            "user_name": comment.user_name or "Anonymous",
             "content": comment.content,
             "user_id": comment.user_id
         }
