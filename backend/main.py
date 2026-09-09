@@ -59,6 +59,12 @@ async def signup(user: UserSignup):
         })
         return {"user": response.user, "message": "Signup successful"}
     except Exception as e:
+        error_msg = str(e).lower()
+        # Check if the error is because the user already exists
+        if "already registered" in error_msg or "user_already_exists" in error_msg or "email already" in error_msg:
+            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
+        
+        # For other errors, show the original message
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.post("/auth/login")
