@@ -1,10 +1,11 @@
+from pypdf import PdfReader
+import io
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Body,Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 import uuid
-from pypdf import PdfReader
-import io
+
 
 from config import GEMINI_API_KEY, SUPABASE_URL, SUPABASE_KEY
 from supabase_client import supabase,supabase_admin
@@ -90,7 +91,7 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = Form(...)):
         pdf_reader = PdfReader(io.BytesIO(file_content))
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text()
+            text += page.extract_text() or ""
         
         # Generate summary with Gemini
         summary_prompt = f"""You are an expert document analyst. Analyze the following text extracted from a PDF document.
