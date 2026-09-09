@@ -88,7 +88,7 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = Form(...)):
         file_content = await file.read()
         
         # Extract text
-        pdf_reader = PdfReader(io.BytesIO(pdf_data))
+        pdf_reader = PdfReader(io.BytesIO(file_content)) # <--- MUST BE file_content
         text = ""
         for page in pdf_reader.pages:
             text += page.extract_text() or ""
@@ -214,11 +214,10 @@ async def chat_with_pdf(chat: ChatMessage):
         )
 
         # Extract text
-        pdf_reader = PdfReader(io.BytesIO(file_content))
+        pdf_reader = PdfReader(io.BytesIO(pdf_data)) # <--- MUST BE pdf_data
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text()
-
+            text += page.extract_text() or ""
         # Conversation history
         history_context = "\n".join(
             chat.history[-5:]
