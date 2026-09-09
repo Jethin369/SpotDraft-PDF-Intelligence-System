@@ -2,7 +2,7 @@
 
 ## 🌐 Live Application
 
-- **Frontend:** https://project-tixwm.vercel.app
+- **Frontend:** https://spotdraftai.vercel.app
 - **Backend API:** https://spotdraft-pdf-v3.onrender.com/docs
 
 ## 📋 Project Overview
