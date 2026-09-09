@@ -10,7 +10,7 @@ export default function Auth() {
     const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    const endpoint = isLogin ? 'https://spotdraft-pdf.onrender.com/auth/login' : 'http://localhost:8000/auth/signup';
+    const endpoint = isLogin ? 'https://spotdraft-pdf-v3.onrender.com/auth/login' : 'https://spotdraft-pdf-v3.onrender.com/auth/signup';
     
     try {
       const res = await fetch(endpoint, {
