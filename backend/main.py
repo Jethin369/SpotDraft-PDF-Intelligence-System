@@ -88,7 +88,7 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = Form(...)):
         file_content = await file.read()
         
         # Extract text
-        pdf_reader = PdfReader(io.BytesIO(file_content))
+        pdf_reader = PdfReader(io.BytesIO(pdf_data))
         text = ""
         for page in pdf_reader.pages:
             text += page.extract_text() or ""
