@@ -11,7 +11,7 @@ export default function Dashboard() {
   const userName = localStorage.getItem('userName');
 
   const fetchDocs = async () => {
-    const res = await fetch(`frontend/src/pages/Dashboard.jsx/documents?user_id=${userId}`);
+    const res = await fetch(`https://spotdraft-pdf.onrender.com/documents?user_id=${userId}`);
     const data = await res.json();
     setDocs(data || []);
   };
@@ -27,7 +27,7 @@ export default function Dashboard() {
     formData.append('user_id', userId); // <--- ADD THIS LINE
 
     try {
-      const res = await fetch('frontend/src/pages/Dashboard.jsx/upload', { method: 'POST', body: formData });
+      const res = await fetch('https://spotdraft-pdf.onrender.com/upload', { method: 'POST', body: formData });
       if (!res.ok) {
         const err = await res.json();
         alert("Upload failed: " + err.detail);

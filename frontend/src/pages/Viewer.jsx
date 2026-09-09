@@ -27,8 +27,8 @@ export default function Viewer() {
         
         // Fetch document
         const endpoint = isShared 
-          ? `frontend/src/pages/Viewer.jsx/share/${linkId}` 
-          : `frontend/src/pages/Viewer.jsx/documents/${docId}`;
+          ? `https://spotdraft-pdf.onrender.com/share/${linkId}` 
+          : `https://spotdraft-pdf.onrender.com/documents/${docId}`;
         
         const docRes = await fetch(endpoint);
         if (!docRes.ok) {
@@ -42,7 +42,7 @@ export default function Viewer() {
         setPdfUrl(pdfUrl);
         
         // Fetch comments
-        const commentsRes = await fetch(`frontend/src/pages/Viewer.jsx/comments/${currentId}`);
+        const commentsRes = await fetch(`https://spotdraft-pdf.onrender.com/comments/${currentId}`);
         if (commentsRes.ok) {
           const commentsData = await commentsRes.json();
           setComments(commentsData || []);
@@ -62,7 +62,7 @@ export default function Viewer() {
     if (!newComment.trim()) return;
     
     try {
-      await fetch('frontend/src/pages/Viewer.jsx/comments', {
+      await fetch('https://spotdraft-pdf.onrender.com/comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -75,7 +75,7 @@ export default function Viewer() {
       setNewComment('');
       
       // Refresh comments
-      const res = await fetch(`frontend/src/pages/Viewer.jsx/comments/${currentId}`);
+      const res = await fetch(`https://spotdraft-pdf.onrender.com/comments/${currentId}`);
       if (res.ok) {
         setComments(await res.json());
       }
@@ -94,7 +94,7 @@ export default function Viewer() {
     setChatInput('');
 
     try {
-      const res = await fetch('frontend/src/pages/Viewer.jsx/chat', {
+      const res = await fetch('https://spotdraft-pdf.onrender.com/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -119,7 +119,7 @@ export default function Viewer() {
 
   const handleShare = async () => {
     try {
-      const res = await fetch(`frontend/src/pages/Viewer.jsx/share/${docId}`, { method: 'POST' });
+      const res = await fetch(`https://spotdraft-pdf.onrender.com/share/${docId}`, { method: 'POST' });
       if (res.ok) {
         const data = await res.json();
         const link = `${window.location.origin}/shared/${data.link_id}`;
