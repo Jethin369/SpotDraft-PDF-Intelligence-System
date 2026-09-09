@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, EmailStr
 import uuid
-import fitz  # PyMuPDF
+from pypdf import PdfReader
+import io
 
 from config import GEMINI_API_KEY, SUPABASE_URL, SUPABASE_KEY
 from supabase_client import supabase,supabase_admin
@@ -86,11 +87,10 @@ async def upload_pdf(file: UploadFile = File(...), user_id: str = Form(...)):
         file_content = await file.read()
         
         # Extract text
-        pdf_doc = fitz.open(stream=file_content, filetype="pdf")
+        pdf_reader = PdfReader(io.BytesIO(file_content))
         text = ""
-        for page in pdf_doc:
-            text += page.get_text()
-        pdf_doc.close()
+        for page in pdf_reader.pages:
+            text += page.extract_text()
         
         # Generate summary with Gemini
         summary_prompt = f"""You are an expert document analyst. Analyze the following text extracted from a PDF document.
@@ -213,16 +213,10 @@ async def chat_with_pdf(chat: ChatMessage):
         )
 
         # Extract text
-        pdf_doc = fitz.open(
-            stream=pdf_data,
-            filetype="pdf"
-        )
-
+        pdf_reader = PdfReader(io.BytesIO(file_content))
         text = ""
-        for page in pdf_doc:
-            text += page.get_text()
-
-        pdf_doc.close()
+        for page in pdf_reader.pages:
+            text += page.extract_text()
 
         # Conversation history
         history_context = "\n".join(
