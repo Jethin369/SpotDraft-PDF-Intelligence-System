@@ -54,37 +54,33 @@ from datetime import datetime, timezone
 @app.post("/auth/signup")
 async def signup(user: UserSignup):
     try:
-        # Step 1: Check if user already exists by attempting passwordless sign-in
-        try:
-            # This will fail if user doesn't exist, succeed if they do
-            check_response = supabase.auth.sign_in_with_otp({
-                "email": user.email
-            })
-            
-            # If we get here without error, user exists
-            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
-            
-        except Exception as check_error:
-            # Check the error - if it's not "user not found", something else is wrong
-            error_msg = str(check_error).lower()
-            if "user not found" not in error_msg and "user could not be found" not in error_msg:
-                # User exists - show error
-                raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
-            # If "user not found", continue with signup
-        
-        # Step 2: User doesn't exist, create new account
+        # Just call signup - Supabase handles everything
         response = supabase.auth.sign_up({
             "email": user.email,
             "password": user.password,
             "options": {"data": {"name": user.name}}
         })
         
-        return {"user": response.user, "message": "Signup successful"}
+        # Check if user was just created or already existed
+        import datetime
+        now = datetime.datetime.now(datetime.timezone.utc)
+        created_at = response.user.created_at
+        
+        # If account is older than 1 minute, it already existed
+        time_diff = (now - created_at).total_seconds()
+        if time_diff > 60:
+            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
+        
+        return {"user": response.user, "message": "Signup successful. Please check your email."}
         
     except HTTPException:
         raise
     except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        error_msg = str(e)
+        # Only catch specific Supabase errors for existing users
+        if "User already registered" in error_msg or "already been used" in error_msg:
+            raise HTTPException(status_code=400, detail="This email is already registered. Please login instead.")
+        raise HTTPException(status_code=400, detail=error_msg)
 
 @app.post("/auth/login")
 async def login(user: UserLogin):
